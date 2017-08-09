@@ -9,32 +9,31 @@ use DependencyInjection\Container;
 
 class ContextStack
 {
-	/**
-	 * @var array
-	 */
-	private static $queueHandler;
-	
-	public static function create(TaskQueue $queue)
-	{
-		if (null === static::$queueHandler) {
-			static::$queueHandler = $queue;
-		}
+    /**
+     * @var array
+     */
+    private static $queueHandler;
+    
+    public static function create(TaskQueue $queue)
+    {
+        if (null === static::$queueHandler) {
+            static::$queueHandler = $queue;
+        }
 
-		return new static;
-	}
+        return new static;
+    }
 
-	public function store($handler, $value = [])
-	{
-		if ($handler instanceof \Closure) {
-			self::$queueHandler->add(new FunctionInvoker($handler), $value);
-		}
-		else {
-			self::$queueHandler->add(new MethodInvoker(new Container, $handler), $value);
-		}
-	}
+    public function store($handler, $value = [])
+    {
+        if ($handler instanceof \Closure) {
+            self::$queueHandler->add(new FunctionInvoker($handler), $value);
+        } else {
+            self::$queueHandler->add(new MethodInvoker(new Container, $handler), $value);
+        }
+    }
 
-	public static function getQueueHandler()
-	{
-		return self::$queueHandler;
-	}
+    public static function getQueueHandler()
+    {
+        return self::$queueHandler;
+    }
 }
