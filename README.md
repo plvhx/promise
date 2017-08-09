@@ -1,5 +1,6 @@
 # Promises/A+ Implementation In PHP
 
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.6-8892BF.svg?style=flat-square)](https://php.net/)
 [![Build status](https://ci.appveyor.com/api/projects/status/8mx5j820l2fsqp41?svg=true)](https://ci.appveyor.com/project/plvhx/promise)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/de2939ec-6f7c-4f97-89ca-479adc934c04/small.png)](https://insight.sensiolabs.com/projects/de2939ec-6f7c-4f97-89ca-479adc934c04)
 
