@@ -1,5 +1,7 @@
 # Promises/A+ Implementation In PHP
 
+[![Build status](https://ci.appveyor.com/api/projects/status/8mx5j820l2fsqp41?svg=true)](https://ci.appveyor.com/project/plvhx/promise)
+
 <a href="https://promisesaplus.com/">
     <img src="https://promisesaplus.com/assets/logo-small.png" alt="Promises/A+ logo"
          title="Promises/A+ 1.0 compliant" align="right" />
