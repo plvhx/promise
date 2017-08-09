@@ -16,6 +16,23 @@ This is a [Promises/A+](https://promisesaplus.com) implementation in PHP. This h
 
 # Promise
 
+## Quick Start
+
+```php
+use Gandung\Promise\Promise;
+
+$promise = new Promise();
+
+$promise->then(
+	function($d) {
+		echo sprintf("%s" . PHP_EOL, $d);
+	},
+	function($e) {
+		throw new \Exception($e);
+	}
+);
+```
+
 - `then(callable $onFulfilled, callable $onRejected)`
 
 ## Description
@@ -55,3 +72,31 @@ Returns the state of the promise. List of promise state can be found in 'Promise
 ## Return Value
 
 Either STATE_PENDING, STATE_FULFILLED, OR STATE_REJECTED
+
+# FulfilledPromise same as Promise
+
+## Quick Start
+
+```php
+use Gandung\Promise\FulfilledPromise;
+
+$promise = new FulfilledPromise('the quick dirty brown fox.');
+
+$promise->then(function($d) {
+	echo sprintf("%s" . PHP_EOL, $d);
+});
+```
+
+# RejectedPromise same as Promise
+
+## Quick Start
+
+```php
+use Gandung\Promise\RejectedPromise;
+
+$promise = new RejectedPromise('the quick dirty brown fox.');
+
+$promise->then(null, function($e) {
+	throw new \Exception($e);
+});
+```
