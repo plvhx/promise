@@ -1,6 +1,7 @@
 # Promises/A+ Implementation In PHP
 
 [![Build status](https://ci.appveyor.com/api/projects/status/8mx5j820l2fsqp41?svg=true)](https://ci.appveyor.com/project/plvhx/promise)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/de2939ec-6f7c-4f97-89ca-479adc934c04/small.png)](https://insight.sensiolabs.com/projects/de2939ec-6f7c-4f97-89ca-479adc934c04)
 
 <a href="https://promisesaplus.com/">
     <img src="https://promisesaplus.com/assets/logo-small.png" alt="Promises/A+ logo"
