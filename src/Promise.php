@@ -82,7 +82,7 @@ class Promise implements PromiseInterface
     {
         if ($this->state !== self::STATE_PENDING) {
             if ($value === $this->current && $state === $this->state) {
-                return false;
+                return;
             }
 
             $prevStatus = $this->state;
@@ -130,45 +130,9 @@ class Promise implements PromiseInterface
         }
     }
 
-    public function wait($callback = null)
+    public function wait()
     {
-        if ($this->waitCallback === null) {
-            if (!($callback instanceof \Closure)) {
-                throw new \LogicException(
-                    sprintf(
-                        "Default waiting callback resolver is not set. " .
-                        "Synchronous wait mechanism is impossible to invoked because %s is called " .
-                        "without callback resolver.", __METHOD__
-                    )
-                );
-            }
-
-            $this->waitCallback = $callback;
-        }
-
-        if ($this->currentState() !== self::STATE_PENDING) {
-            return;
-        }
-
-        try {
-            $waitCallback = $this->waitCallback;
-            $this->waitCallback = null;
-            $waitCallback();
-        } catch (\Exception $e) {
-            if ($this->currentState() === self::STATE_PENDING) {
-                $this->reject($e);
-            } else {
-                throw $e;
-            }
-        }
-
-        Context\ContextStack::getQueueHandler()->run();
-
-        if ($this->currentState() === self::STATE_PENDING) {
-            $this->reject(
-                'Invoking the synchronous wait callback resolver didn\'t resolve the current promise'
-            );
-        }
+        $this->waitInPendingState();
 
         $q = $this->current instanceof PromiseInterface
             ? $this->current->wait()
@@ -176,6 +140,11 @@ class Promise implements PromiseInterface
 
         if ($this->current instanceof PromiseInterface || $this->currentState() === self::STATE_FULFILLED) {
             return $q;
+        }
+        else {
+            throw $q instanceof \Exception
+                ? $q
+                : new \Exception($q);
         }
     }
 
@@ -230,16 +199,12 @@ class Promise implements PromiseInterface
 
     private function trigger($value)
     {
-        if ($this->state === self::STATE_PENDING) {
-            throw new \LogicException(
-                "Cannot resolving or rejecting promise when in pending state."
-            );
-        }
-
         $context = $this->context;
         $this->context = null;
         $this->current = $value;
-        
+        $this->waitCallback = null;
+        $this->cancelCallback = null;
+
         if (!method_exists($value, 'then')) {
             $index = $this->state === self::STATE_FULFILLED ? 1 : 2;
 
@@ -251,7 +216,7 @@ class Promise implements PromiseInterface
             });
 
             Context\ContextStack::getQueueHandler()->run();
-        } elseif ($value instanceof Promise) {
+        } elseif ($value instanceof Promise && $value->currentState() === self::STATE_PENDING) {
             $value->context = array_merge($value->context, $context);
         } else {
             $value->then(
@@ -285,6 +250,8 @@ class Promise implements PromiseInterface
             } else {
                 $promise->reject($value);
             }
+        } catch (\Throwable $e) {
+            $promise->reject($e);
         } catch (\Exception $e) {
             $promise->reject($e);
         }
@@ -301,5 +268,32 @@ class Promise implements PromiseInterface
         }
 
         $this->state = $state;
+    }
+
+    private function waitInPendingState()
+    {
+        if ($this->currentState() !== self::STATE_PENDING) {
+            return;
+        } else if ($this->waitCallback) {
+            try {
+                $waitCallback = $this->waitCallback;
+                $this->waitCallback = null;
+                $waitCallback();
+            } catch (\Exception $e) {
+                if ($this->currentState() === self::STATE_PENDING) {
+                    $this->reject($e);
+                } else {
+                    throw $e;
+                }
+            }
+        }
+
+        Context\ContextStack::getQueueHandler()->run();
+
+        if ($this->currentState() === self::STATE_PENDING) {
+            $this->reject(
+                'Invoking the synchronous wait callback resolver didn\'t resolve the current promise'
+            );
+        }
     }
 }
