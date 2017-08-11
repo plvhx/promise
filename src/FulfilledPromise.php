@@ -35,6 +35,8 @@ class FulfilledPromise implements PromiseInterface
             if ($q->currentState() === self::STATE_PENDING) {
                 try {
                     $q->resolve($onFulfilled($value));
+                } catch (\Throwable $e) {
+                    $q->reject($e);
                 } catch (\Exception $e) {
                     $q->reject($e);
                 }

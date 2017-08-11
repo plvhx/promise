@@ -26,6 +26,16 @@ class Promise implements PromiseInterface
      */
     private $prevState;
 
+    /**
+     * @var \Closure
+     */
+    private $waitCallback;
+
+    /**
+     * @var \Closure
+     */
+    private $cancelCallback;
+
     public function then($onFulfilled = null, $onRejected = null)
     {
         if ($this->state === self::STATE_PENDING) {
@@ -46,16 +56,147 @@ class Promise implements PromiseInterface
             : new RejectedPromise($this->current);
     }
 
+    public function setWaitCallback(\Closure $callback)
+    {
+        if (!($callback instanceof \Closure)) {
+            throw new \InvalidArgumentException(
+                sprintf("Parameter 1 of %s must be a valid callback.", __METHOD__)
+            );
+        }
+
+        $this->waitCallback = $callback;
+    }
+
+    public function setCancelCallback(\Closure $callback)
+    {
+        if (!($callback instanceof \Closure)) {
+            throw new \InvalidArgumentException(
+                sprintf("Parameter 1 of %s must be a valid callback.", __METHOD__)
+            );
+        }
+
+        $this->cancelCallback = $callback;
+    }
+
+    private function validateState()
+    {
+        if ($this->state !== self::STATE_PENDING) {
+            $prevStatus = $this->prevState === 4 ? 'fulfilled' : 'rejected';
+            $currentStatus = $this->currentState() === 4 ? 'fulfilled' : 'rejected';
+
+            throw $this->currentState() === $this->prevState
+                ? new \LogicException(sprintf("State of the promise is already %s", $prevStatus))
+                : new \LogicException(
+                    sprintf("Unable to change %s promise to %s", $prevStatus, $currentStatus)
+                );
+        }
+    }
+
     public function resolve($value)
     {
+        $this->validateState();
         $this->setState(self::STATE_FULFILLED);
         $this->trigger($value);
     }
 
     public function reject($reason)
     {
+        $this->validateState();
         $this->setState(self::STATE_REJECTED);
         $this->trigger($reason);
+    }
+
+    public function wait($callback = null)
+    {
+        if ($this->waitCallback === null) {
+            if (!($callback instanceof \Closure)) {
+                throw new \LogicException(
+                    sprintf(
+                        "Default waiting callback resolver is not set. " .
+                        "Synchronous wait mechanism is impossible to invoked because %s is called " .
+                        "without callback resolver.", __METHOD__
+                    )
+                );
+            }
+
+            $this->waitCallback = $callback;
+        }
+
+        if ($this->currentState() !== self::STATE_PENDING) {
+            return;
+        }
+
+        try {
+            $waitCallback = $this->waitCallback;
+            $this->waitCallback = null;
+            $waitCallback();
+        } catch (\Exception $e) {
+            if ($this->currentState() === self::STATE_PENDING) {
+                $this->reject($e);
+            } else {
+                throw $e;
+            }
+        }
+
+        Context\ContextStack::getQueueHandler()->run();
+
+        if ($this->currentState() === self::STATE_PENDING) {
+            $this->reject(
+                'Invoking the synchronous wait callback resolver didn\'t resolve the current promise'
+            );
+        }
+
+        $q = $this->current instanceof PromiseInterface
+            ? $this->current->wait()
+            : $this->current;
+
+        if ($this->current instanceof PromiseInterface || $this->currentState() === self::STATE_FULFILLED) {
+            return $q;
+        }
+    }
+
+    public function cancel($callback = null)
+    {
+        if ($this->cancelCallback === null) {
+            if (!($callback instanceof \Closure)) {
+                throw new \LogicException(
+                    sprintf(
+                        "Default cancellation callback resolver is not set. " .
+                        "Cancellation mechanism is impossible to invoked because %s is called " .
+                        "without callback resolver.", __METHOD__
+                    )
+                );
+            }
+
+            $this->cancelCallback = $callback;
+        }
+
+        if ($this->currentState() !== self::STATE_PENDING) {
+            return;
+        }
+
+        if ($this->cancelCallback) {
+            $cancelCallback = $this->cancelCallback;
+            $this->cancelCallback = null;
+
+            try {
+                $cancelCallback();
+            } catch (\Exception $e) {
+                $this->reject($e);
+            }
+        }
+
+        if ($this->currentState() === self::STATE_PENDING) {
+            $this->reject(new \Exception('Promise has been cancelled.'));
+        }
+
+        $e = $this->current instanceof PromiseInterface
+            ? $this->current->cancel()
+            : $this->current;
+
+        if ($this->current instanceof PromiseInterface || $this->currentState() === self::STATE_REJECTED) {
+            return $e;
+        }
     }
 
     public function currentState()

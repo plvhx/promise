@@ -35,6 +35,8 @@ class RejectedPromise implements PromiseInterface
             if ($q->currentState() === self::STATE_PENDING) {
                 try {
                     $q->resolve($onRejected($reason));
+                } catch (\Throwable $e) {
+                    $q->reject($e);
                 } catch (\Exception $e) {
                     $q->reject($e);
                 }
