@@ -2,7 +2,7 @@
 
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.6-8892BF.svg?style=flat-square)](https://php.net/)
 [![Build status](https://ci.appveyor.com/api/projects/status/8mx5j820l2fsqp41?svg=true)](https://ci.appveyor.com/project/plvhx/promise)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/14e50be8-c441-4d03-b65d-cb07e33c0672/mini.png)](https://insight.sensiolabs.com/projects/14e50be8-c441-4d03-b65d-cb07e33c0672)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/de2939ec-6f7c-4f97-89ca-479adc934c04/mini.png)](https://insight.sensiolabs.com/projects/de2939ec-6f7c-4f97-89ca-479adc934c04)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/plvhx/promise/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/plvhx/promise/?branch=master)
 
 <a href="https://promisesaplus.com/">
