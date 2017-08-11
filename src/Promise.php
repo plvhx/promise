@@ -99,8 +99,6 @@ class Promise implements PromiseInterface
                         $currentStatus == 4 ? 'fulfilled' : 'rejected'
                     )
                 );
-
-            return false;
         }
 
         if ($value === $this) {
