@@ -19,6 +19,80 @@ This is a [Promises/A+](https://promisesaplus.com) implementation in PHP. This h
 
 # API
 
+# Deferred
+
+## Quick Start
+
+```php
+use Gandung\Promise\Deferred;
+
+$deferred = new Deferred();
+
+$deferred->resolve('success.');
+
+$deferred->promise()->then(
+	function($d) {
+		echo sprintf("%s" . PHP_EOL, $d);
+	},
+	function($e) {
+		echo sprintf("%s" . PHP_EOL, $e);
+	}
+);
+```
+
+It will print "success." because the promise state is fulfilled.
+
+```php
+use Gandung\Promise\Deferred;
+
+$deferred = new Deferred();
+
+$deferred->reject('fail.');
+
+$deferred->promise()->then(
+	function($d) {
+		echo sprintf("%s" . PHP_EOL, $d);
+	},
+	function($e) {
+		echo sprintf("%s" . PHP_EOL, $e);
+	}
+);
+```
+
+It will print "fail." because the promise state is rejected.
+
+# Deferred Method
+
+- `promise()`
+
+## Description
+
+Ability to return immutable promise object when current is null.
+
+## Return Value
+
+Returns the promise of the deferred.
+
+- `resolve($value)`
+
+## Description
+
+Resolves the promise return by method `promise()`. All consumers are notified by having `$onFulfilled` (which they registered via `$promise->then()`) called with `$value`.
+
+## Return Value
+
+None.
+
+- `reject($reason)`
+
+## Description
+
+Rejects the promise returned by `promise()`, signalling that the deferred's computation failed. All consumers are notified by having `$onRejected` (which they registered via `$promise->then()`) called with `$reason`.
+
+## Return Value
+
+None.
+
 # Promise
 
 ## Quick Start
@@ -37,6 +111,8 @@ $promise->then(
 	}
 );
 ```
+
+# Promise Method
 
 - `then(callable $onFulfilled, callable $onRejected)`
 
