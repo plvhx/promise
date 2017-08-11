@@ -105,8 +105,6 @@ class Promise implements PromiseInterface
             throw new \LogicException(
                 "Unable to fulfill or reject a promise with itself."
             );
-
-            return false;
         }
 
         return true;
