@@ -43,6 +43,48 @@ class PromiseTest extends \PHPUnit_Framework_TestCase
         $this->callNonPublicMethod($promise, 'trigger', false, 'foo');
     }
 
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCanThrowExceptionWhenSupplyInvalidClosureToWaitCallback()
+    {
+        $promise = new Promise();
+        $promise->setWaitCallback(null);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCanThrowExceptionWhenSupplyInvalidClosureToCancellationCallback()
+    {
+        $promise = new Promise();
+        $promise->setCancelCallback(null);
+    }
+
+    public function testCanDoSynchronousWait()
+    {
+        $promise = new Promise();
+        $promise->setWaitCallback(function () use (&$promise) {
+            $promise->resolve('success.');
+        });
+        $response = $promise->wait();
+
+        $this->assertInternalType('string', $response);
+        $this->assertNotNull($response);
+    }
+
+    public function testCanDoCancellation()
+    {
+        $promise = new Promise();
+        $promise->setCancelCallback(function () use (&$promise) {
+            $promise->reject('fail.');
+        });
+        $response = $promise->cancel();
+
+        $this->assertInternalType('string', $response);
+        $this->assertNotNull($response);
+    }
+
     public function testIfPromiseCanBeFulfilledWithResolvingCallback()
     {
         $promise = new Promise();
@@ -170,5 +212,49 @@ class PromiseTest extends \PHPUnit_Framework_TestCase
         $promise = new Promise();
         $this->callNonPublicMethod($promise, 'setState', false, 4);
         $this->callNonPublicMethod($promise, 'invokeContext', true, [[$promise], 1, 'this is a text']);
+    }
+
+    /**
+     * @expectedException \LogicException
+     */
+    public function testCanThrowExceptionWhenCallWaitWithoutCallback()
+    {
+        $promise = new Promise();
+        $promise->wait();
+    }
+
+    public function testCanCallWaitWithCallback()
+    {
+        $promise = new Promise();
+        $promise->wait(function () use (&$promise) {
+            $promise->resolve('inside wait method..');
+        });
+    }
+
+    public function testCanViolatePromiseStateWhenCallingWait()
+    {
+        $promise = new Promise();
+        $promise->resolve('first.');
+        $promise->wait(function () use (&$promise) {
+            $promise->resolve('second.');
+        });
+    }
+
+    public function testCanCatchExceptionAndViolatePromiseStateWhenCallingWait()
+    {
+        $promise = new Promise();
+        $this->callNonPublicMethod($promise, 'setState', false, 1);
+        $promise->wait(function () {
+            throw new \Exception('try this..');
+        });
+    }
+
+    public function testCanCatchExceptionWhenCallingWait()
+    {
+        $promise = new Promise();
+        $this->callNonPublicMethod($promise, 'setState', false, 4);
+        $promise->wait(function () {
+            throw new \Exception('try this without violating promise state.');
+        });
     }
 }

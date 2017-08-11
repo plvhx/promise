@@ -22,11 +22,6 @@ class Promise implements PromiseInterface
     private $context = [];
 
     /**
-     * @var integer
-     */
-    private $prevState;
-
-    /**
      * @var \Closure
      */
     private $waitCallback;
@@ -35,6 +30,11 @@ class Promise implements PromiseInterface
      * @var \Closure
      */
     private $cancelCallback;
+
+    /**
+     * @var boolean
+     */
+    private $isStateTransformed;
 
     public function then($onFulfilled = null, $onRejected = null)
     {
@@ -56,7 +56,7 @@ class Promise implements PromiseInterface
             : new RejectedPromise($this->current);
     }
 
-    public function setWaitCallback(\Closure $callback)
+    public function setWaitCallback(\Closure $callback = null)
     {
         if (!($callback instanceof \Closure)) {
             throw new \InvalidArgumentException(
@@ -67,7 +67,7 @@ class Promise implements PromiseInterface
         $this->waitCallback = $callback;
     }
 
-    public function setCancelCallback(\Closure $callback)
+    public function setCancelCallback(\Closure $callback = null)
     {
         if (!($callback instanceof \Closure)) {
             throw new \InvalidArgumentException(
@@ -78,32 +78,60 @@ class Promise implements PromiseInterface
         $this->cancelCallback = $callback;
     }
 
-    private function validateState()
+    private function validateState($value, $state)
     {
         if ($this->state !== self::STATE_PENDING) {
-            $prevStatus = $this->prevState === 4 ? 'fulfilled' : 'rejected';
-            $currentStatus = $this->currentState() === 4 ? 'fulfilled' : 'rejected';
+            if ($value === $this->current && $state === $this->state) {
+                return false;
+            }
 
-            throw $this->currentState() === $this->prevState
-                ? new \LogicException(sprintf("State of the promise is already %s", $prevStatus))
+            $prevStatus = $this->state;
+            $currentStatus = $state;
+
+            throw $this->state === $state
+                ? new \LogicException(
+                    sprintf("State of the promise is already %s", $prevStatus == 4 ? 'fulfilled' : 'rejected')
+                )
                 : new \LogicException(
-                    sprintf("Unable to change %s promise to %s", $prevStatus, $currentStatus)
+                    sprintf(
+                        "Unable to change %s promise to %s",
+                        $prevStatus == 4 ? 'fulfilled' : 'rejected',
+                        $currentStatus == 4 ? 'fulfilled' : 'rejected'
+                    )
                 );
+
+            return false;
         }
+
+        if ($value === $this) {
+            throw new \LogicException(
+                "Unable to fulfill or reject a promise with itself."
+            );
+
+            return false;
+        }
+
+        return true;
     }
 
     public function resolve($value)
     {
-        $this->validateState();
-        $this->setState(self::STATE_FULFILLED);
-        $this->trigger($value);
+        $this->isStateTransformed = $this->validateState($value, self::STATE_FULFILLED);
+
+        if ($this->isStateTransformed) {
+            $this->setState(self::STATE_FULFILLED);
+            $this->trigger($value);
+        }
     }
 
     public function reject($reason)
     {
-        $this->validateState();
-        $this->setState(self::STATE_REJECTED);
-        $this->trigger($reason);
+        $this->isStateTransformed = $this->validateState($reason, self::STATE_REJECTED);
+
+        if ($this->isStateTransformed) {
+            $this->setState(self::STATE_REJECTED);
+            $this->trigger($reason);
+        }
     }
 
     public function wait($callback = null)
@@ -211,12 +239,6 @@ class Promise implements PromiseInterface
                 "Cannot resolving or rejecting promise when in pending state."
             );
         }
-
-        if ($value === $this->current && $this->prevState === $this->state) {
-            return;
-        }
-
-        $this->prevState = $this->state;
 
         $context = $this->context;
         $this->context = null;
