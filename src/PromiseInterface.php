@@ -4,9 +4,9 @@ namespace Gandung\Promise;
 
 interface PromiseInterface
 {
-	/**
-	 * Indicates the state of current promise is pending.
-	 */
+    /**
+     * Indicates the state of current promise is pending.
+     */
     const STATE_PENDING = 1;
 
     /**
