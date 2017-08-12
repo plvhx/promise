@@ -9,6 +9,9 @@ class Deferred implements PromisorInterface
      */
     private $promise;
 
+    /**
+     * {@inheritdoc}
+     */
     public function promise()
     {
         if (null === $this->promise) {
@@ -18,11 +21,21 @@ class Deferred implements PromisorInterface
         return $this->promise;
     }
 
+    /**
+     * Resolving promise with given value.
+     *
+     * @param mixed $value
+     */
     public function resolve($value)
     {
         $this->promise()->resolve($value);
     }
 
+    /**
+     * Rejecting promise with given reason.
+     *
+     * @param mixed $reason
+     */
     public function reject($reason)
     {
         $this->promise()->reject($reason);

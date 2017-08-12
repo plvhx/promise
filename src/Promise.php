@@ -36,6 +36,14 @@ class Promise implements PromiseInterface
      */
     private $isStateTransformed;
 
+    /**
+     * Appends fulfillment and rejection handlers to the promise, and returns an immutable
+     * new promise resolving to the return value of the handler.
+     *
+     * @param \Closure $onFulfilled Callback to be called when promise state is fulfilled.
+     * @param \Closure $onRejected Callback to be called when promise state is rejected.
+     * @return Promise
+     */
     public function then($onFulfilled = null, $onRejected = null)
     {
         if ($this->state === self::STATE_PENDING) {
@@ -56,6 +64,12 @@ class Promise implements PromiseInterface
             : new RejectedPromise($this->current);
     }
 
+    /**
+     * Set waiting callback.
+     *
+     * @param \Closure $callback Callback to be set.
+     * @return void
+     */
     public function setWaitCallback(\Closure $callback = null)
     {
         if (!($callback instanceof \Closure)) {
@@ -67,6 +81,12 @@ class Promise implements PromiseInterface
         $this->waitCallback = $callback;
     }
 
+    /**
+     * Set cancellation callback.
+     *
+     * @param \Closure $callback Callback to be set.
+     * @return void
+     */
     public function setCancelCallback(\Closure $callback = null)
     {
         if (!($callback instanceof \Closure)) {
@@ -78,6 +98,14 @@ class Promise implements PromiseInterface
         $this->cancelCallback = $callback;
     }
 
+    /**
+     * Comparing current promise state to new state and current promise value
+     * to new value.
+     *
+     * @param mixed $value Value to be compare.
+     * @param integer $state New promise state to be compare.
+     * @return null|boolean
+     */
     private function validateState($value, $state)
     {
         if ($this->state !== self::STATE_PENDING) {
@@ -110,6 +138,9 @@ class Promise implements PromiseInterface
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function resolve($value)
     {
         $this->isStateTransformed = $this->validateState($value, self::STATE_FULFILLED);
@@ -120,6 +151,9 @@ class Promise implements PromiseInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reject($reason)
     {
         $this->isStateTransformed = $this->validateState($reason, self::STATE_REJECTED);
@@ -130,6 +164,11 @@ class Promise implements PromiseInterface
         }
     }
 
+    /**
+     * Synchronously forces promise to complete using wait method.
+     *
+     * @return mixed
+     */
     public function wait()
     {
         $this->waitInPendingState();
@@ -140,30 +179,20 @@ class Promise implements PromiseInterface
 
         if ($this->current instanceof PromiseInterface || $this->currentState() === self::STATE_FULFILLED) {
             return $q;
-        }
-        else {
+        } else {
             throw $q instanceof \Exception
                 ? $q
                 : new \Exception($q);
         }
     }
 
-    public function cancel($callback = null)
+    /**
+     * Cancel a promise that has not yet been fulfilled.
+     *
+     * @return mixed
+     */
+    public function cancel()
     {
-        if ($this->cancelCallback === null) {
-            if (!($callback instanceof \Closure)) {
-                throw new \LogicException(
-                    sprintf(
-                        "Default cancellation callback resolver is not set. " .
-                        "Cancellation mechanism is impossible to invoked because %s is called " .
-                        "without callback resolver.", __METHOD__
-                    )
-                );
-            }
-
-            $this->cancelCallback = $callback;
-        }
-
         if ($this->currentState() !== self::STATE_PENDING) {
             return;
         }
@@ -192,11 +221,20 @@ class Promise implements PromiseInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function currentState()
     {
         return $this->state;
     }
 
+    /**
+     * Invoking promise handler based on current state and given value.
+     *
+     * @param mixed $value
+     * @return void
+     */
     private function trigger($value)
     {
         $context = $this->context;
@@ -234,6 +272,14 @@ class Promise implements PromiseInterface
         }
     }
 
+    /**
+     * Invoking handler based on given context, index, and value.
+     *
+     * @param array $context
+     * @param integer $index
+     * @param mixed $value
+     * @return void
+     */
     private static function invokeContext($context, $index, $value)
     {
         $promise = $context[0];
@@ -257,6 +303,12 @@ class Promise implements PromiseInterface
         }
     }
 
+    /**
+     * Set promise state to given state.
+     *
+     * @param integer $state
+     * @return void
+     */
     private function setState($state)
     {
         if ($state !== self::STATE_PENDING &&
@@ -270,11 +322,16 @@ class Promise implements PromiseInterface
         $this->state = $state;
     }
 
+    /**
+     * Synchronously forces promise to wait when current promise state is pending.
+     *
+     * @return void
+     */
     private function waitInPendingState()
     {
         if ($this->currentState() !== self::STATE_PENDING) {
             return;
-        } else if ($this->waitCallback) {
+        } elseif ($this->waitCallback) {
             try {
                 $waitCallback = $this->waitCallback;
                 $this->waitCallback = null;

@@ -22,6 +22,9 @@ class FulfilledPromise implements PromiseInterface
         $this->value = $value;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function then($onFulfilled = null, $onRejected = null)
     {
         if (!$onFulfilled) {
@@ -48,6 +51,13 @@ class FulfilledPromise implements PromiseInterface
         return $q;
     }
 
+    /**
+     * Resolving the promise if given value are equal to current value. Otherwise,
+     * throws an exception.
+     *
+     * @param integer $value
+     * @throws \Exception
+     */
     public function resolve($value)
     {
         if ($value !== $this->value) {
@@ -60,7 +70,14 @@ class FulfilledPromise implements PromiseInterface
         }
     }
 
-    public function reject($value)
+    /**
+     * Rejecting this promise will throw an exception because the state of current
+     * promise is fulfilled.
+     *
+     * @param mixed $reason
+     * @throws \Exception
+     */
+    public function reject($reason)
     {
         throw new \LogicException(
             sprintf(
@@ -69,6 +86,11 @@ class FulfilledPromise implements PromiseInterface
         );
     }
 
+    /**
+     * Return the state of current promise.
+     *
+     * @return integer
+     */
     public function currentState()
     {
         return self::STATE_FULFILLED;
