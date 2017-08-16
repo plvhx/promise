@@ -176,6 +176,26 @@ is unable to be used.
 
 Return the most current cancelled promise value. It can be throwing an exception.
 
+- `setWaitCallback(\Closure $callback = null)`
+
+## Description
+
+Set the wait callback handler.
+
+## Return Value
+
+None.
+
+- `setCancelCallback(\Closure $callback = null)`
+
+## Description
+
+Set the cancellation callback handler.
+
+## Return Value
+
+None.
+
 # FulfilledPromise same as Promise
 
 ## Quick Start
