@@ -154,6 +154,28 @@ Returns the state of the promise. List of promise state can be found in 'Promise
 
 Either STATE_PENDING, STATE_FULFILLED, OR STATE_REJECTED
 
+- `wait()`
+
+## Description
+
+Synchronously wait on the current promise to complete it's unfulfilled tasks.
+
+## Return Value
+
+Returning the most current resolved promise value.
+
+- `cancel()`
+
+## Description
+
+Possible to cancel the most current active promise and it's ancestors which not yet been resolved
+and leave the current active promise state to rejected. It means the most current active promise
+is unable to be used.
+
+## Return Value
+
+Return the most current cancelled promise value. It can be throwing an exception.
+
 # FulfilledPromise same as Promise
 
 ## Quick Start
