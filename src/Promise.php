@@ -110,7 +110,7 @@ class Promise implements PromiseInterface
     {
         if ($this->state !== self::STATE_PENDING) {
             if ($value === $this->current && $state === $this->state) {
-                return;
+                return null;
             }
 
             $prevStatus = $this->state;
@@ -209,7 +209,7 @@ class Promise implements PromiseInterface
         }
 
         if ($this->currentState() === self::STATE_PENDING) {
-            $this->reject(new \Exception('Promise has been cancelled.'));
+            $this->reject('Promise has been cancelled.');
         }
 
         $e = $this->current instanceof PromiseInterface
