@@ -2,8 +2,6 @@
 
 namespace Gandung\Promise;
 
-use TaskQueue\TaskQueue;
-
 class RejectedPromise implements PromiseInterface
 {
     /**
@@ -31,7 +29,7 @@ class RejectedPromise implements PromiseInterface
         $q = new Promise();
         $reason = $this->reason;
 
-        Context\ContextStack::create(new TaskQueue)->store(static function () use ($q, $reason, $onRejected) {
+        Context\ContextStack::create()->store(static function () use ($q, $reason, $onRejected) {
             if ($q->currentState() === self::STATE_PENDING) {
                 try {
                     $q->resolve($onRejected($reason));

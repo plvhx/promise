@@ -19,10 +19,10 @@ class ContextStack
      *
      * @param TaskQueue
      */
-    public static function create(TaskQueue $queue)
+    public static function create()
     {
         if (null === static::$queueHandler) {
-            static::$queueHandler = $queue;
+            static::$queueHandler = new TaskQueue;
         }
 
         return new static;
@@ -43,7 +43,7 @@ class ContextStack
         if ($handler instanceof \Closure) {
             self::$queueHandler->add(new FunctionInvoker($handler), $value);
         } else {
-            self::$queueHandler->add(new MethodInvoker(new Container, $handler), $value);
+            self::$queueHandler->add(new MethodInvoker($handler), $value);
         }
     }
 

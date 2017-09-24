@@ -2,8 +2,6 @@
 
 namespace Gandung\Promise;
 
-use TaskQueue\TaskQueue;
-
 class Promise implements PromiseInterface
 {
     /**
@@ -246,7 +244,7 @@ class Promise implements PromiseInterface
         if (!method_exists($value, 'then')) {
             $index = $this->state === self::STATE_FULFILLED ? 1 : 2;
 
-            Context\ContextStack::create(new TaskQueue)->store(
+            Context\ContextStack::create()->store(
             static function () use ($index, $context, $value) {
                 foreach ($context as $c) {
                     self::invokeContext($c, $index, $value);

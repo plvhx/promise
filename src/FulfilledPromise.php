@@ -2,8 +2,6 @@
 
 namespace Gandung\Promise;
 
-use TaskQueue\TaskQueue;
-
 class FulfilledPromise implements PromiseInterface
 {
     /**
@@ -34,7 +32,7 @@ class FulfilledPromise implements PromiseInterface
         $q = new Promise();
         $value = $this->value;
 
-        Context\ContextStack::create(new TaskQueue)->store(static function () use ($q, $value, $onFulfilled) {
+        Context\ContextStack::create()->store(static function () use ($q, $value, $onFulfilled) {
             if ($q->currentState() === self::STATE_PENDING) {
                 try {
                     $q->resolve($onFulfilled($value));
