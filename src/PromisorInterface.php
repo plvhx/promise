@@ -2,6 +2,9 @@
 
 namespace Gandung\Promise;
 
+/**
+ * @author Paulus Gandung Prakosa <rvn.plvhx@gmail.com>
+ */
 interface PromisorInterface
 {
     /**

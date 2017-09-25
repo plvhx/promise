@@ -2,6 +2,9 @@
 
 namespace Gandung\Promise;
 
+/**
+ * @author Paulus Gandung Prakosa <rvn.plvhx@gmail.com>
+ */
 class RejectedPromise implements PromiseInterface
 {
     /**
@@ -9,6 +12,9 @@ class RejectedPromise implements PromiseInterface
      */
     private $reason;
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($reason)
     {
         if (method_exists($reason, 'then')) {
@@ -20,6 +26,9 @@ class RejectedPromise implements PromiseInterface
         $this->reason = $reason;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function then($onFulfilled = null, $onRejected = null)
     {
         if (!$onRejected) {
@@ -46,6 +55,9 @@ class RejectedPromise implements PromiseInterface
         return $q;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function resolve($value)
     {
         throw new \LogicException(
@@ -55,6 +67,9 @@ class RejectedPromise implements PromiseInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reject($reason)
     {
         if ($reason !== $this->reason) {
@@ -67,6 +82,9 @@ class RejectedPromise implements PromiseInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function currentState()
     {
         return self::STATE_REJECTED;

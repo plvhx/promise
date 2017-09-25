@@ -7,6 +7,9 @@ use TaskQueue\Invoker\FunctionInvoker;
 use TaskQueue\Invoker\MethodInvoker;
 use DependencyInjection\Container;
 
+/**
+ * @author Paulus Gandung Prakosa <rvn.plvhx@gmail.com>
+ */
 class ContextStack
 {
     /**

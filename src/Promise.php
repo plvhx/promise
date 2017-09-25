@@ -2,6 +2,9 @@
 
 namespace Gandung\Promise;
 
+/**
+ * @author Paulus Gandung Prakosa <rvn.plvhx@gmail.com>
+ */
 class Promise implements PromiseInterface
 {
     /**
